@@ -1,0 +1,29 @@
+﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+; #Warn  ; Enable warnings to assist with detecting common errors.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
+
+GetPolarWindowList:
+	;--------- Creates a list of all Open Windows with AHK_Class SDI:TN3270Plus -------------
+		;----- Windows is a variable. Think an Array of the list feature.
+			Winget, Windows, List, AHK_Class SDI:TN3270Plus
+			;--- Loop through the windows list ------
+			Loop, %Windows%
+			{
+				;---- Make ID variable which is a combination of Windows Variable and a number to specify an entry in an array
+				id := Windows%A_Index%
+				;---- Get win title, assign to variable "wt" and look for AHK_ID of variable Windows%A_Index% Number
+				WingetTitle wt, AHK_ID %id%
+				;---- Create a list in the "r" variable
+				r .= wt . ID . "`n"
+			}
+			Msgbox %r%
+return
+
+AddGraphicOverAButton:
+	Gui, add, picture, x10 y10 w25 h-1, Settings.jpg
+	;---- 0x4000000 some reason makes it so the button shows through.
+	Gui, Add, Button, x5 y5 w35 h35 0x4000000 gphotolink,
+	Gui, show
+return

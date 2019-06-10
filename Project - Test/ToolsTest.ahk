@@ -1,0 +1,226 @@
+﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+; #Warn  ; Enable warnings to assist with detecting common errors.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
+Test_MacroList = TestScript1||TestScript2|TestScript3|TestScript4|TestScript5|TestScript_MakePolarMacro
+
+
+TestScriptButton_Click:
+	Gui_Text := "Test Script Keys"
+	Menu_Macroset := 5
+	Ifwinactive, Work Tools
+	{
+		Gui, Submit,
+		
+		User_MouseCoords()
+		
+		Gui, MacroRunning:New,, Macro Set Active...
+		Gui, +AlwaysOnTop -Sysmenu +ToolWindow
+		Gui, Add, Text,, %Gui_Text% Active...
+		Gui, Add, DropdownList, gTest_MenuSelect vTest_Macro sort,TestScript1||TestScript2|TestScript3|TestScript4|TestScript5|TestScript_MakePolarMacro|AuditExceptionsTest
+		Gui, add, button, default w100 gTest_SubmitButton, Deactivate
+		Gui, Submit, NoHide
+		Gui, MacroRunning:show, x%X_Mouse% y%Y_Mouse%
+	}
+Return
+
+;------ Submit and hide GUI Interface ---------------
+Test_SubmitButton:
+	Gui, Submit
+return
+
+;----- Submit and don't hide. Used to udpate value in dropdownlist ------------------
+Test_MenuSelect:
+	Gui, Submit, NoHide
+return
+
+;---- Run Macro selected from list -------------------------------
+Test_PrimaryMacro:
+	Gosub, %Test_Macro%
+Return
+
+;---- Test Macros -------------------------------------------------
+TestScript1:
+	Redefineme := Clipboard
+	Stringreplace, Redefineme, Redefineme,`t,{Tab},all
+	StringReplace, Redefineme, Redefineme,`r,{Return},all
+	StringReplace, Redefineme, Redefineme,`n,{Newline},all
+	StringReplace, Redefineme, Redefineme,%A_Space%,{Space},all
+	Msgbox, %Redefineme%
+return
+
+TestScript2:
+IP := 600
+WinActivate, AHK_Class SDI:TN3270Plus
+Loop, Parse, Clipboard, `n, `t `n `r %A_Space%
+{
+	If A_Loopfield =
+		Exit
+	SendEvent, %A_Loopfield%{enter}
+	Sleep, %IP%
+	Loop, 4
+	{
+		IfWinactive, AHK_Class SDI:TN3270Plus
+		{
+			SendEvent, s{Enter}
+			Sleep, %IP%
+			SendEvent, +{f10}
+			Sleep, %IP%
+			SendEvent, ^a^c
+			Clipwait, 1
+			If Errorlevel
+				Exit
+			IfNotInString, Clipboard, Promotion%A_Space%History
+			{
+				ExtraTooltip := A_Loopfield
+			}
+			Value1 := Instr(Clipboard, "Z`*`*",,1,1)
+			Value2 := Instr(Clipboard, "J`*`*",,1,1)
+			
+			If Value1 and Value2
+			{
+				SendEvent, +{f10}Audited{Enter}
+				Sleep, %IP%
+				SendEvent, {f12 2}{Down}
+				Sleep, %IP%
+			}
+		}
+	}
+	SendEvent, +{Enter 2}{Tab}+{End}
+}
+return
+
+TestScript3:
+;- A loop that counts how many "Tabs" exist in the clipboard.
+	x = 0
+		Loop,
+		{
+			If Instr(Clipboard,"`t",False,1,A_Index) = 0
+			{
+				
+				Msgbox % "In String location : "Instr(Clipboard,"`t",False,1,A_Index) . "`n Index: " . A_Index . "`nTab count: " . x
+				break
+			}
+			else
+				x ++
+		}
+return
+
+TestScript4:
+	TodayVal += -2,Days
+	Msgbox, %TodayVal%
+return
+
+TestScript5:
+Inputbox, TestString, Enter Text to search, Enter Text
+PolarScreenCheck(TestString)
+If PolarScreenCheckBool
+	Msgbox, Found it in %Clipboard%
+else
+	Msgbox, It still continued
+return
+
+TestScript_MakePolarMacro:
+Msgbox, 4,, This will create a macro in Polar called Open - Open - New and assign it to SHFT+CTRL+7. Do you wish to continue?
+IfMsgBox No
+	Exit
+IfMsgBox Yes
+{
+	WinActivate, AHK_Class SDI:TN3270Plus
+	Macro1Name = Open - Open - New
+	Macro1Script = <PF5><Cursorto 528>o<Enter><PF12><Tab><Tab>o<Enter><PF12><,><CursorTo 177><Delete><Delete><Delete><Delete>
+		Loop, 19
+		{
+			IfWinNotActive, AHK_Class SDI:TN3270Plus
+			{
+				IfWinNotActive, AHK_Class #32770
+					Exit
+			}
+			If A_Index = 1
+				SendEvent, !m
+			If A_Index = 2
+				SendEvent, s
+			If A_Index = 3
+				SendEvent, {tab}
+			If A_Index = 4
+				SendEvent, !m
+			If A_Index = 5
+				SendEvent, o
+			If A_Index = 6
+			{
+				SendEvent, %Macro1Name%
+			}
+			If A_Index = 7
+				SendEvent, {Enter}
+			If A_Index = 8
+				SendEvent, !m
+			If A_Index = 9
+				SendEvent, e
+			If A_Index = 10
+				SendEvent, 1
+			If A_Index = 11
+				SendEvent, {Backspace 10}
+			If A_Index = 12
+				SendEvent, %Macro1Script%
+			If A_Index = 13
+				SendEvent, {Tab 4}
+			If A_Index = 14
+				SendEvent, {Enter}
+			If A_Index = 15
+				SendEvent, !m
+			If A_Index = 16
+				SendEvent, a
+			If A_Index = 17
+				SendEvent, 1
+			If A_Index = 18
+				SendEvent, ^+6
+			If A_Index = 19
+				SendEvent, {Enter}
+			Sleep, 200
+		}
+}
+return
+
+AuditExceptionsTest:
+	Sleep, 350
+	Temp_Clipboard := Clipboard
+	Clipboard :=
+		Loop, 2
+		{
+			IfWinNotExist, AHK_Class SDI:TN3270Plus
+				exit
+			IfWinNotActive, AHK_Class SDI:TN3270Plus
+				WinActivate, AHK_Class SDI:TN3270Plus
+			IfWinNotActive, AHK_Class SDI:TN3270Plus
+				exit
+			SendEvent, ^a^c
+			Clipwait, 1
+			If ErrorLevel
+			{
+				TooltipNote("Clipboard appears to still be empty...")
+				ErrorLevel = 0
+				If A_Index = 2
+				{
+					TooltipNote("Failed to copy polar screen")
+					exit
+				}
+			}
+			else
+			{
+				TooltipNote("Clipboard Filled, Searching for Variable")
+				Break
+			}
+		}
+	
+	If (instr(Temp_Clipboard, "MN*",,1,1)) and (instr(Temp_Clipboard, "MV*",,1,1)) and (instr(Temp_Clipboard, "MH*",,1,1)) and (instr(Temp_Clipboard, "MS*",,1,1)) and (instr(Temp_Clipboard, "MT*",,1,1)) and (instr(Temp_Clipboard, "M**",,1,1)= 0)
+	{
+		Tooltip, Passed
+		SendEvent, ^q
+	}
+	else
+	{
+		Msgbox, Nope Sorry %Var_To_Check%
+		Exit
+	}
+return

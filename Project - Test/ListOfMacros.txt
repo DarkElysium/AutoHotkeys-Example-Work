@@ -1,0 +1,8 @@
+TestScript1
+TestScript2
+TestScript3
+TestScript4
+TestScript5
+ReformatClipboard
+TestScript_MakePolarMacro
+AuditExceptionsTest
